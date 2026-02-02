@@ -91,21 +91,6 @@
 .splash-ad,
 
 /* Attribute selectors */
-[class*="banner-ad"],
-[class*="ad-"],
-[class*="advert"],
-[class*="sponsored"],
-[class*="promoted"],
-[class*="taboola"],
-[class*="outbrain"],
-[class*="criteo"],
-[class*="adsense"],
-[class*="google_ad"],
-[id*="advertisement"],
-[id*="banner-ad"],
-[id*="ad-"],
-[id*="advert"],
-[id*="sponsored"],
 [data-ad-slot],
 [data-ad-format],
 [data-ad-client],
@@ -114,7 +99,12 @@
 [data-ad-code],
 [data-native-ad],
 [data-promoted],
-[data-sponsor] {
+[data-sponsor],
+[id^="ad-"],
+[id*="-ad"],
+[class^="ad-"],
+[class*="banner-ad"],
+[class*="banner"] {
   display: none !important;
   visibility: hidden !important;
   height: 0 !important;
@@ -125,8 +115,6 @@
   opacity: 0 !important;
   overflow: hidden !important;
   pointer-events: none !important;
-  position: absolute !important;
-  left: -9999px !important;
 }
 
 /* Remove ad iframes */
