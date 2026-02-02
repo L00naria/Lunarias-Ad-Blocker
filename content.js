@@ -124,17 +124,51 @@ const isVideoElement = (el) => {
   if (!el) return false;
   try {
     // Check if element is or contains a video player
-    return videoSelectors.some(selector => {
+    // Direct tag check
+    if (el.tagName && el.tagName.toLowerCase() === 'video') return true;
+
+    // Matches or is contained within known video/player selectors
+    const directMatch = videoSelectors.some(selector => {
       try {
-        return el.matches(selector) || el.closest(selector);
+        return (el.matches && el.matches(selector)) || (el.closest && el.closest(selector));
       } catch (e) {
         return false;
       }
-    }) || el.querySelector('video') !== null;
+    });
+    if (directMatch) return true;
+
+    // Contains a video element or video iframe
+    try {
+      if (el.querySelector && (el.querySelector('video') || el.querySelector('iframe[src*="youtube"], iframe[src*="youtu.be"], iframe[src*="vimeo"], iframe[src*="twitch"]'))) return true;
+    } catch (e) {}
+
+    // Walk up ancestors to see if any ancestor contains a video or is a player container
+    try {
+      let p = el.parentElement;
+      while (p) {
+        if (p.querySelector && (p.querySelector('video') || p.querySelector('iframe[src*="youtube"], iframe[src*="vimeo"], iframe[src*="twitch"]'))) return true;
+        if (p.matches && (p.matches('[class*="player"]') || p.matches('[class*="video"]') || p.matches('[id*="player"]') || p.matches('.html5-video-player'))) return true;
+        p = p.parentElement;
+      }
+    } catch (e) {}
+
+    return false;
   } catch (e) {
     return false;
   }
 };
+
+function hideElement(el) {
+  try {
+    if (!el || isVideoElement(el)) return false;
+    // Mark and hide instead of removing to avoid breaking site layout/scripts
+    if (el.dataset) el.dataset.lunariasHidden = '1';
+    el.style.setProperty('display', 'none', 'important');
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
 
 function removeAds() {
   try {
@@ -142,10 +176,7 @@ function removeAds() {
     adSelectors.forEach(selector => {
       try {
         document.querySelectorAll(selector).forEach(el => {
-          if (el && !isVideoElement(el)) {
-            // Reclaim space by removing the element
-            el.remove();
-          }
+          if (el) hideElement(el);
         });
       } catch (e) {
         console.warn('Error with selector:', selector, e);
@@ -154,14 +185,19 @@ function removeAds() {
 
     // Block ads by attribute patterns
     document.querySelectorAll('[data-ad-slot], [data-ad-format], [data-ad-client]').forEach(el => {
-      if (!isVideoElement(el) && !el.closest('video') && !el.closest('[class*="player"]')) {
-        el.remove();
-      }
+      hideElement(el);
     });
 
     // Remove ad scripts and tracking
+    // Avoid removing scripts outright as this can break sites; only neutralize known ad scripts when safe
     document.querySelectorAll('script[src*="doubleclick"], script[src*="googleadservices"], script[src*="googlesyndication"], script[src*="pagead"], script[src*="ads"]').forEach(el => {
-      el.remove();
+      try {
+        if (!isVideoElement(el) && !el.closest || !el.closest('video, [class*="player"]')) {
+          // Neutralize by removing src so it won't execute if possible
+          el.dataset.lunariasOriginalSrc = el.src || '';
+          el.removeAttribute('src');
+        }
+      } catch (e) {}
     });
 
     // Remove common ad iframes (but keep video iframes)
@@ -187,7 +223,7 @@ function removeAds() {
         src.includes('twitch');
 
       if (shouldRemove && !isVideo) {
-        el.remove();
+        hideElement(el);
       }
     });
 
