@@ -1,9 +1,21 @@
-[class*="ad-"],
-[id*="ad-"],
+/* CSS-based ad hiding (complements content.js) */
 .advertisement,
 .sponsored,
-[class*="sponsor"],
 .ad-container,
-.ad-banner {
+.ad-banner,
+.ad-sidebar,
+.ads,
+[class*="banner-ad"],
+[id*="advertisement"],
+[id*="banner-ad"] {
   display: none !important;
+}
+
+/* Ensure video players stay visible */
+video,
+[class*="player"],
+iframe[src*="youtube"],
+iframe[src*="vimeo"],
+iframe[src*="dailymotion"] {
+  display: block !important;
 }
