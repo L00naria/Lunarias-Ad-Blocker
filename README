@@ -1,64 +1,65 @@
+
 Lunaria's AD Blocker
 
-KNOWN ISSUES:
-Will remove the youtube video player in the event a AD plays which requires a refresh to fix.
+A lightweight Chromium extension that blocks unwanted ads using Manifest V3's
+`declarativeNetRequest` ruleset. Primarily tested on Opera GX and other
+Chromium-based browsers.
 
-A simple Chrome extension that blocks unwanted ads and improves browsing speed.
+**Known issues**
+- In some cases a video player (e.g. YouTube) may stop playing when an ad is
+	removed; a page refresh may resolve this.
 
-Project Structure
+Project structure (top-level files)
 
-ADblocker/
-│
-├── manifest.json
-├── background.js
-├── popup.html
-└── icons/
-├── icon16.png
-├── icon48.png
-└── icon128.png
+- `manifest.json` — Extension manifest (Manifest V3).
+- `background.js` — Service worker / background logic.
+- `content.js` — Content script injected into pages at `document_start`.
+- `blocker.css` — CSS injected by the content script to hide elements.
+- `rules.json` — Declarative Net Request rules used for blocking.
+- `popup.html` — UI shown when clicking the extension action icon.
+- `icon16.png`, `icon48.png`, `icon128.png` — Extension icons.
+- `_metadata/` — Generated ruleset index used when building the rules JSON.
 
-How to  Install (Load Packed Extension)
+How it works
 
-Download the .crx file or the .zip in Releases and extract tthe .crx file
+- The extension uses Manifest V3 and `declarativeNetRequest` for network-level
+	blocking via `rules.json`.
+- A content script (`content.js`) runs at `document_start` and injects
+	`blocker.css` and any DOM-manipulation logic needed to hide dynamic
+	ad-related elements.
+- `background.js` runs as a service worker and coordinates any background
+	tasks and state stored via the `storage` permission.
 
-Go to chrome://extensions/
+Installation (Load unpacked)
 
-Turn ON "Developer mode" in the top-right corner.
+1. Open your Chromium-based browser and go to `chrome://extensions/`.
+2. Enable "Developer mode" (top-right).
+3. Click "Load unpacked" and select this project's folder (the one
+	 containing `manifest.json`).
+4. The extension should appear in the toolbar.
 
-Drag and drop the .crx file into the extensions page.
+Note: Packaging (.crx) and direct installation may be blocked by some browsers;
+use the unpacked flow for development and testing.
 
-The extension should now appear in your toolbar.
+Permissions used
 
-How to Install (Load Unpacked Extension)
+- `declarativeNetRequest` — Apply blocking rules from `rules.json`.
+- `storage` — Persist user preferences.
+- `host_permissions` (`<all_urls>`) — Allow content scripts and rules to run on
+	all sites.
 
-Open Google Chrome (or another Chromium-based browser).
+Editing and regenerating rules
 
-Go to chrome://extensions/
+- The active ruleset is `rules.json`. A generated ruleset is stored under
+	`_metadata/generated_indexed_rulesets/`. Update your source rules and
+	regenerate `rules.json` using your rules-generation workflow.
 
-Turn ON "Developer mode" in the top-right corner.
+Contributing
 
-Click "Load unpacked".
-
-Select the ADblocker folder (the one containing manifest.json).
-
-The extension should now appear in your toolbar.
-
-File Descriptions
-
-manifest.json - Defines the extension’s name, version, permissions, and icons.
-background.js - Contains background logic such as ad blocking rules.
-popup.html - The small window shown when clicking the extension icon.
-icons/ - Folder containing the extension’s icons in multiple sizes.
-
-Permissions Used
-
-storage - Saves user preferences.
-tabs - Allows the extension to access browser tabs.
-webRequest - Lets the extension monitor network requests.
-webRequestBlocking - Enables blocking unwanted requests.
-host_permissions - Grants access to all websites (<all_urls>).
-
+- Send pull requests for bug fixes or improvements. Keep changes small and
+	focused.
 
 License
 
-This project is open-source and may be used or modified for personal or educational purposes.
+This project is open-source and may be used or modified for personal or
+educational purposes.
